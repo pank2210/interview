@@ -24,6 +24,7 @@ class BT:
   def __init__(self):
     print("BT init")
     self.head = None
+    self.depth = {}
    
   def find_left_most_child(self,cnode):
     if not cnode.left:
@@ -83,20 +84,30 @@ class BT:
     else:
       self.head = Node(val)
    
-  def print_nodes(self,node,depth=0):
+  def traverse(self,node,depth=0):
     if node:
       if node.right:
-        self.print_nodes(node.right,depth+1)
+        self.traverse(node.right,depth+1)
       print(" -%d(%d)- > " % (node.get(),depth),end="")
+      if depth in self.depth: #build depth dict
+        self.depth[depth].append(node)
+      else:
+        self.depth[depth]=[node]
       if node.left:
-        self.print_nodes(node.left,depth+1)
+        self.traverse(node.left,depth+1)
    
-  def print(self):
-    level=0
+  def refresh_depth_arr(self):
+    print("Refreshing depth array of the Tree...")
     if self.head:
-      self.print_nodes(self.head)
+      self.traverse(self.head)
     else:
       print("empty tree")
+   
+  def print(self):
+    for d in sorted(self.depth):
+      print("\ndepth[%d]-" % (d))
+      for n in self.depth[d]:
+        print("%d " % (n.get()),end="")
 
 def execute_test():
   #vals = [ 50, 20, 10, 15, 90, 5, 13]
@@ -106,8 +117,10 @@ def execute_test():
   
   for v in vals:
     bt.add(v)
-    bt.print()
-    print("\n","-"*10)
+   
+  bt.refresh_depth_arr()
+  bt.print()
+  print("\n","-"*10)
 
   print("right most child - ",bt.find_right_most_child(bt.head).get()) 
   print("left most child - ",bt.find_left_most_child(bt.head).get())
