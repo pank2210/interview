@@ -1,3 +1,17 @@
+'''
+   Binary Tree class
+   
+   1. Should support add/push, pop, remove and search.
+   2. add should also add new node as head
+   3. pop should always remove node from head
+   4. remove should use value based search and then remove. i.e. given node value match then remove it.
+   5. print exmaples of preorder, postorder and inorder
+      5.1. depth dictionary implemented using preorder
+      5.2. Inorder prints a sorted tree and used as a depth first algo. or used for BTree sort.
+   6. Implement of Breath first using queue.
+'''
+
+import queue
 
 class Node(object):
   def __init__(self,val):
@@ -84,46 +98,96 @@ class BT:
     else:
       self.head = Node(val)
    
-  def traverse(self,node,depth=0):
+  def inorder(self,node,depth=0):
     if node:
-      if node.right:
-        self.traverse(node.right,depth+1)
-      print(" -%d(%d)- > " % (node.get(),depth),end="")
+      #if node.left:
+      self.inorder(node.left,depth+1)
+      #print(" -%d(%d)- > " % (node.get(),depth),end="")
+      print("%d(%d) " % (node.get(),depth),end="")
+      #if node.right:
+      self.inorder(node.right,depth+1)
+   
+  def preorder(self,node,depth=0):
+    if node:
+      print("%d(%d) " % (node.get(),depth),end="")
       if depth in self.depth: #build depth dict
         self.depth[depth].append(node)
       else:
         self.depth[depth]=[node]
-      if node.left:
-        self.traverse(node.left,depth+1)
+      self.preorder(node.left,depth+1)
+      self.preorder(node.right,depth+1)
+   
+  def preorder_prl(self,node,depth=0):
+    if node:
+      print("%d(%d) " % (node.get(),depth),end="")
+      self.preorder_prl(node.right,depth+1)
+      self.preorder_prl(node.left,depth+1)
+   
+  def postorder(self,node,depth=0):
+    if node:
+      self.postorder(node.left,depth+1)
+      self.postorder(node.right,depth+1)
+      print("%d(%d) " % (node.get(),depth),end="")
+   
+  def traverse(self,node,depth=0):
+    if node:
+      self.traverse(node.right,depth+1)
+      print("%d(%d) " % (node.get(),depth),end="")
+      self.traverse(node.left,depth+1)
    
   def refresh_depth_arr(self):
-    print("Refreshing depth array of the Tree...")
     if self.head:
-      self.traverse(self.head)
+      print("InOrder / LPR...")
+      self.inorder(self.head)
+      print("\n PreOrder / PLR Refreshing depth array of the Tree...")
+      self.preorder(self.head)
+      print("\n PostOrder / LRP...")
+      self.postorder(self.head)
+      print("\nPreOrder changed to PRL...")
+      self.preorder_prl(self.head)
     else:
       print("empty tree")
    
+  def bfs(self): #breadth first search implementation
+    #q = queue.SimpleQueue()
+    q = queue.Queue()
+     
+    q.put(self.head) #put initial node or head to start the algo
+    #print(" head - ",self.head.val," queue empty - ",q.empty())
+     
+    depth=0 
+    while(not q.empty()): #is not empty then keep processing
+      node = q.get()
+      print("%d " % (node.get()),end="")
+      if node.left:
+        q.put(node.left)
+      if node.right:
+        q.put(node.right)
+   
   def print(self):
     for d in sorted(self.depth):
-      print("\ndepth[%d]-" % (d))
+      print("\ndepth[%02d] " % (d),end="")
       for n in self.depth[d]:
-        print("%d " % (n.get()),end="")
+        print("%3d " % (n.get()),end="")
 
 def execute_test():
   #vals = [ 50, 20, 10, 15, 90, 5, 13]
-  vals = [ 50,25,74,12,60,100,6,18,55,65,85,150,3,9,4,14,22,13,16,15,17,22,21,23,80,90,125,175,160]
-  
+  vals = [ 50,25,74,12,60,100,6,18,55,65,85,150,3,11,4,14,22,13,16,15,17,22,21,23,80,90,125,175,160,162,164,166,10,9,8]
+   
   bt = BT()
-  
   for v in vals:
     bt.add(v)
    
   bt.refresh_depth_arr()
   bt.print()
   print("\n","-"*10)
-
+   
   print("right most child - ",bt.find_right_most_child(bt.head).get()) 
   print("left most child - ",bt.find_left_most_child(bt.head).get())
+   
+  print("Breadth First...")
+  bt.bfs()
+  print("\n","-"*10)
    
   del_vals = [50,10,13,22,85]
   for v in del_vals:
