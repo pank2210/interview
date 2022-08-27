@@ -17,15 +17,24 @@ class Vertice(object):
     self.id = id
     self.links = links #holds pointer/reference to connected Vertice
     self.visited = visited #is set to true when this vertice is visited as part of path
-   
-  def set_visited(self):
+  
+  #maintain all state data for nodes as path traversed 
+  def set_visited(self,level:int,post_order:int):
     self.visited = True
+    self.post_order = post_order
+    self.level = level
    
   def isvisited(self):
     return self.visited
    
   def get_links(self):
     return self.links
+   
+  def get_post_order(self):
+    return self.post_order
+   
+  def get_level(self):
+    return self.level
    
   def print(self):
     log(" id[%s] links[%s] visited[%s]" % (self.id,self.links,self.visited))
@@ -40,6 +49,9 @@ class Vertices(object):
   
   def add(self,k,v):
     self.vertices[k] = Vertice(k,v)
+  
+  def get_vertice(self,k):
+    return self.vertices[k]
   
   def print(self):
     for k,v in self.vertices.items():
@@ -58,11 +70,14 @@ class Vertices(object):
 ''' 
 class Path(object):
   def __init__(self,v,x):
-    self.id = x
-    self.set = set()
-    self.path = []
-    self.v = v
+    self.id = x #node key
+    self.set = set() #set to collect all unique node
+    self.path = [] #DFS sequence
+    self.v = v #reference to Vertices
     self.cycles = [] #adds id's if cycle detected.
+    self.starts = None
+    self.sinks = None
+    self.post_order = 0 #hold counter for post_order numbers from DFS
     self.traverse(x)
   
   def exist(self,id):
@@ -79,12 +94,20 @@ class Path(object):
       log(" [%s] is not reachable to [%s]" % (self.id,id))
       return 0
   
-  def add(self,id):
+  def update_post_order(self):
+    self.post_order += 1
+  
+  def get_post_order(self):
+    return self.post_order
+  
+  def add(self,id,level:int):
     if not self.exist(id):
-      log(" Adding %s " % (id))
+      log(" Adding %s(%d) " % (id,level))
       self.set.add(id)
       self.path.append(id)
-      self.v.vertices[id].set_visited()
+      self.update_post_order()
+      self.v.vertices[id].set_visited(level,self.get_post_order())
+       
       return True
     else:
       log("Error: [%s]id already in [%s]path so ignored" % (id,self.id))
@@ -93,7 +116,8 @@ class Path(object):
   def print(self):
     log("Path id[{}] Set - {} ".format(self.id,self.set))
     for id in self.path:
-      log("[%s] -> " % (id),end="")
+      vert = self.v.get_vertice(id)
+      log("%s(%d,%d) -> " % (id,vert.get_level(),vert.get_post_order()),end="")
      
   def check_loop(self,x,arr:list = []):
     if not x:
@@ -110,15 +134,17 @@ class Path(object):
           self.check_loop(vlink,arr)
         return
      
-  def traverse(self,x):
+  def traverse(self,x,arr:list = [],level:int = 0):
     if x not in self.v.vertices: 
       log("Error x[%s] not in vertices collection." % (x))
       return
     else:
-      if not self.exist(x):
-        self.add(x)
+      if not x in arr:
+        arr.append(x)
+        self.add(x,level)
+        level += 1
         for vlink in self.v.vertices[x].get_links(): 
-          self.traverse(vlink)
+          self.traverse(vlink,arr,level)
         return
       else:
         log("Initial cycle suspect at #{} within DAG.".format(x))
