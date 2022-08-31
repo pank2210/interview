@@ -1,8 +1,8 @@
 
-import queue
+import sys
 
+debug = False
 debug = True
-#debug = False
 
 def log(msg,end=None):
   if debug:
@@ -38,7 +38,7 @@ class DAG(object):
     data = data[2:]
     n = len(data)
     edges = list(zip(data[0:n:2],data[1:n:2]))
-    log(" edges {} ".format(edges))
+    log(" edges [{}] {} ".format(len(edges),edges))
     self.adj = {}
     for (u,v) in edges:
       if u in self.adj:
@@ -51,86 +51,13 @@ class DAG(object):
         self.adj[v] = Vertex(v)
         self.adj[v].next = []
     self.size = len(self.adj.keys())
+    log(" #vertices [{}] ".format(self.size))
     self.print_adj()
    
   def print_adj(self):
     for v in self.adj:
       #str = " %s(%d,%d/%d) : ".format(self.adj[v].id
       self.adj[v].print()
-   
-  def bfs(self,x,order,dist,prev,target=None):
-    seq = 0
-    q = queue.Queue()
-    q.put(x)
-    while not q.empty():
-      v = q.get()
-      order.append(v)
-      for next in self.adj[v].next:
-        if dist[next] == 9999:
-          dist[next] = dist[v] + 1
-          prev[next] = v
-          if target: 
-            if next != target:
-              q.put(next)
-          else:
-            q.put(next)
-          self.adj[next].pre_order=seq 
-          seq += 1
-   
-  def run_bfs(self):
-    #initialize key collectors
-    visited = {}
-    dist = {}
-    prev = {}
-    for v in self.adj:
-      dist[v] = 9999
-      prev[v] = None
-     
-    #log(" size - {} visited {} ".format(self.size,visited))
-    order = []
-    for v in self.adj:
-      if dist[v] == 999:
-        dist[v] = 0
-        self.bfs(v,order,dist,prev)
-     
-    log(" BFS order [{}] ".format(order))
-    for v in order:
-      log("[{}]({},{},{}) ".format(v,self.adj[v].pre_order,prev[v],dist[v]),end="")
-   
-  def get_shortest_path(self,source,target):
-    if source not in self.adj or target not in self.adj:
-      log("Either of source {} and target {} is not valid vertice".format(source,target))
-      return -1 #path between source to target doesnt exists
-      
-    #initialize key collectors
-    dist = {}
-    prev = {}
-    for v in self.adj:
-      dist[v] = 9999
-      prev[v] = None
-     
-    #log(" size - {} visited {} ".format(self.size,visited))
-    order = []
-    dist[source] = 0
-    self.bfs(source,order,dist,prev,target)
-    
-    if dist[target] == 9999:
-      log("No path exists between source {} and target {}".format(source,target))
-      return -1 #path between source to target doesnt exists
-    else:
-      log(" BFS order [{}] ".format(order))
-      for v in order:
-        #log("[{}]({},{}) ".format(v,prev[v],dist[v]),end="")
-        log("[{}]({},{},{}) ".format(v,self.adj[v].pre_order,prev[v],dist[v]),end="")
-      
-      cur = target
-      log("\n Shortest path from {} to {} is #{} units and path is [".format(source,target,dist[target]),end="")
-      while cur != source:
-        log(" {}({}) -> ".format(cur,self.adj[cur].pre_order),end="")
-        cur = prev[cur]
-      log(" {}({})] ".format(cur,self.adj[cur].pre_order))
-      
-      return dist[target]
    
   def dfs(self,x,visited:list,level:int=0):
     if visited[x]:
@@ -191,6 +118,8 @@ class DAG(object):
         if i not in reverse_adj:
           reverse_adj[i] = Vertex(i)
         #log(" (i,j) {} reverse_adj j[{}] i [{}]".format((i,j),reverse_adj[j].id,reverse_adj[i].id))
+    log("Diff in adj  Vs reverse [{}]".format(set(self.adj.keys())-set(reverse_adj.keys())))
+    #log("Diff in reverse  Vs adj [{}]".format(set(reverse_adj.keys())-set(self.adj.keys())))
     self.adj = None
     self.adj = reverse_adj
     #self.print_adj()
@@ -218,17 +147,24 @@ class DAG(object):
         self.scc_count += 1
         if len(scc_stack) > 1:
           self.cycles += 1
-        log("\n***** scc_stck {}".format(scc_stack))
+          #print("\n***** scc_stck {}".format(scc_stack))
+          log("***** scc_stck {}".format(scc_stack))
      
     log(" scc_count [{}] cycles [{}]".format(self.scc_count,self.cycles)) 
 
-def run_graph(input_data):
-    dag = DAG(input_data)
-    #dag.run_scc()
-    #dag.run_bfs()
-    print(dag.get_shortest_path(5,10))
-     
-    return 1
+def acyclic(input_data):
+  dag = DAG(input_data)
+  dag.run_scc()
+   
+  return dag.cycles
+
+def read_input_from_file():
+  data = ""
+  i_fd = open("dag_input01.txt","r")
+  for ln in i_fd:
+    data += ln.strip() + " "
+  return data
+    
    
 if __name__ == '__main__':
     #input_data = sys.stdin.read()
@@ -238,13 +174,12 @@ if __name__ == '__main__':
     #input_data = "4 0 1 2 3 2" #constraints testing
     #input_data = "4 4 1 2 3 2 4 3"
     #input_data = "4 3 1 2 4 1 3 1"
+    #input_data = "4 3 1 2 3 2 4 3"
     #input_data = "4 4 1 2 4 1 2 3 3 1" #scc's 2
     #input_data = "5 72 1 3 2 3 1 4 3 4 1 5 2 5 3" #scc's 5
     #input_data = "8 8 0 1 1 2 2 3 2 4 3 0 4 5 5 6 6 4 6 7" #example from progamiz.com
     #input_data = "12 12 1 2 3 2 4 3 5 6 6 7 7 8 6 9 9 11 11 12 12 8 12 9 8 10" #cycle detect test
-    input_data = "8 8 5 6 6 7 7 8 6 9 9 11 11 12 12 8 12 9 8 10" #cycle detect test
-    #input_data = "8 8 1 2 2 3 3 6 6 7 2 4 4 5 5 7 7 8 2 9 9 10 10 8 2 11 11 12 12 8"
-   
+    input_data = " 12 12 " + read_input_from_file()
     '''
       SCC's 4
            4 -> 3 -> 2
@@ -261,4 +196,4 @@ if __name__ == '__main__':
                 5 -> 6 -> 7 -> 8 -> 10
     '''
     log("input_data - {} ".format(input_data))
-    print(run_graph(input_data))
+    print(acyclic(input_data))
