@@ -66,7 +66,7 @@ class DAG(object):
       v = q.get()
       order.append(v)
       for next in self.adj[v].next:
-        if dist[next] == 9999:
+        if dist[next] == 999:
           dist[next] = dist[v] + 1
           prev[next] = v
           if target: 
@@ -83,7 +83,7 @@ class DAG(object):
     dist = {}
     prev = {}
     for v in self.adj:
-      dist[v] = 9999
+      dist[v] = 999
       prev[v] = None
      
     #log(" size - {} visited {} ".format(self.size,visited))
@@ -106,7 +106,7 @@ class DAG(object):
     dist = {}
     prev = {}
     for v in self.adj:
-      dist[v] = 9999
+      dist[v] = 999
       prev[v] = None
      
     #log(" size - {} visited {} ".format(self.size,visited))
@@ -114,7 +114,7 @@ class DAG(object):
     dist[source] = 0
     self.bfs(source,order,dist,prev,target)
     
-    if dist[target] == 9999:
+    if dist[target] == 999:
       log("No path exists between source {} and target {}".format(source,target))
       return -1 #path between source to target doesnt exists
     else:
