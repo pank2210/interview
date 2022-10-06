@@ -4,6 +4,22 @@ import sys
 from datetime import datetime
 import queue
 
+'''
+   1. Trie is DS with struct 
+      a. has char, data and dict to next chars
+      b. end of linked chain have '$' char marking end. 
+      c. for source DS last struct will also store offset of match
+   2. for both patterns and source string create trie data structure
+   3. write match algo that uses pattern trie based searc on source trie.
+      usecases to handle in match are
+      a. pattern and source trie both reaches end while traversing. this is
+         a perfect match at end of source string so return the offset  
+      b. source string reaches end. nothing to match or matched failed.
+      c. pattern reaches end. navigate trie from that point returning all 
+         matching offsets for that pattern.
+      d. if none of reaches the end then keep recurssion untill a/b/c is met.
+'''
+
 NA = -1
 
 debug=False
@@ -102,7 +118,9 @@ def build_trie_for_text(text):
 
 def match_patterns(patterns_node,text_node,result):
   #log(" running pattern match with {}".format(patterns))
-  if patterns_node.patternEnd or text_node.patternEnd:
+  if text_node.patternEnd:
+    return
+  if patterns_node.patternEnd:
     if patterns_node.patternEnd:
       get_leaf_data(text_node,result)
       log(" pattern last char NA  matched and accumulated result is {} ".format(result))
