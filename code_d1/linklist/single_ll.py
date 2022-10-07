@@ -31,7 +31,7 @@ class List(object):
     self.head = None
     #self.tail = None
    
-  def add(self,val):
+  def insert(self,val):
     self.push(val)
    
   def push(self,val):
@@ -43,16 +43,28 @@ class List(object):
       self.head = Node(val)
       #self.tail = self.head
     #print('**',val,self.head.val)
-   
-  def print(self,get=False):
+  
+  def traverse(self,pnode,node):
+    if node:
+      print(" %s ->" % (node.get()),end="")
+      return self.traverse(node,node.next)
+    else:
+      return pnode
+      
+  def recurse_print(self):
+    node = self.traverse(None,self.head)
+    print(" recurse_print %s " % (node.get()))
+     
+    return True    
+      
+  def print(self):
     ret = []
     if self.head:
       node = self.head
       #print(" *head[%s] *tail[%s]" % (self.head.val,self.tail.val))
       while(node):
         print(" %s ->" % (node.get()),end="")
-        if get:
-          ret.append(node.val)     
+        ret.append(node.val)     
         node = node.next
     else:
       print("<<List Empty>>")
@@ -79,7 +91,7 @@ class List(object):
       node = node.next
     return ret
    
-  def remove(self,val):
+  def delete(self,val):
     if self.head:
       if self.head.val == val:
         self.pop() #delete the head as it matched
@@ -91,88 +103,67 @@ class List(object):
            temp = None
         else:
            print("No match in list for [%s]" % (val))
+    return self.print()
+  
+  def create_linklist_from_arr(self,arr):
+    for v in arr:
+      self.insert(v)
 
-def execute_test():
-   random.seed(100) #set fix seed
+class Test(object):
+  def __init__(self):
+    self.name = 'Test'
+    self.instance = List()
+    self.input = None
+    
+    self.test_config = {
+      'print': self.print
+      ,'delete': self.delete
+      ,'recurse_print': self.recurse_print
+    }
+  
+  def print(self,args):
+    input = args[0]
+    if self.input != input:
+      self.input = input
+      self.instance.create_linklist_from_arr(input)
+     
+    return self.instance.print()
+  
+  def delete(self,args):
+    input = args[0]
+    if self.input != input:
+      self.input = input
+      self.instance.create_linklist_from_arr(input)
+     
+    return self.instance.delete(args[1])
+  
+  def recurse_print(self,args):
+    input = args[0]
+    if self.input != input:
+      self.input = input
+      self.instance.create_linklist_from_arr(input)
+     
+    return self.instance.recurse_print()
+  
+  def run_testcase(self,testcase,args):
+    return self.test_config[testcase](args=args)
+    
+
+def run_test():
+  test_cases = [
+    ['print',[[ 200, 25, 75, 125, 300, 12, 35, 60]],[60, 35, 12, 300, 125, 75, 25, 200]]
+    ,['delete',[[ 200, 25, 75, 125, 300, 12, 35, 60],125],[60, 35, 12, 300, 75, 25, 200]]
+    ,['recurse_print',[[ 200, 25, 75, 125, 300, 12, 35, 60]], True]
+  ]
    
-   #genrate sample test data
-   sample = random.sample( string.digits, k=7)
-   print(" Input Sample - ",sample)
-   
-   #create test data sample List
-   def create_test_sample_list(_sample=None):
-     list = List()
-     if _sample: #check if usecase specific sample has been passed. 
-       test_data = _sample
-     else:
-       test_data = sample
-     for i in range(len(test_data)):
-       list.push(test_data[i])
-     return list
-    
-   #test the list
-   list = create_test_sample_list()
-   ret = list.print(True) #print the list
-   expected = []
-   for i in range(len(sample)):
-     expected = [sample[i]] + expected
-   if ret == expected:
-     print("Passed: Simple test passed input[{}] output[{}]".format(sample,ret))
-   else:
-     print("Failed: Simple test failed input[{}] output[{}] expected[{}]".format(sample,ret,expected))
-    
-   #test the pop
-   list = create_test_sample_list()
-   expected = []
-   del_index = 6
-   for i in range(len(sample)):
-     if not del_index == i:
-       expected = [sample[i]] + expected
-   pop_ret = list.pop()
-   ret = list.print(True) #print the list
-   if ret == expected and pop_ret == sample[-1]:
-     print("Passed: Test pop passed pop ret[{}] list left[{}]".format(pop_ret,ret))
-   else:
-     print("Failed: Test pop failed pop ret[{}] expected pop ret[{}] list left[{}] expected list left[{}]".format(pop_ret,sample[-1],ret,expected))
-    
-   #test the pop, boundary case. list had only one node
-   test_data = 10
-   list = create_test_sample_list([test_data])
-   expected = []
-   pop_ret = list.pop()
-   ret = list.print(True) #print the list
-   if ret == expected and pop_ret == test_data:
-     print("Passed: Pop when only one node test passed pop ret[{}] list left[{}]".format(pop_ret,ret))
-   else:
-     print("Failed: Pop when only one node test failed pop ret[{}] expected pop ret[{}] list left[{}] expected list left[{}]".format(pop_ret,test_data,ret,expected))
-    
-   #test the delete case1
-   list = create_test_sample_list()
-   expected = []
-   del_index = 3
-   for i in range(len(sample)):
-     if not del_index == i:
-       expected = [sample[i]] + expected
-   list.remove(sample[del_index])
-   ret = list.print(True) #print the list
-   if ret == expected:
-     print("Passed: Random value find and delete test passed deleted[{}] list left[{}]".format(sample[del_index],ret))
-   else:
-     print("Failed: Random value find and delete test failed delete [{}] failed list left[{}] expected list left[{}]".format(sample[del_index],ret,expected))
-    
-   #test the delete case2
-   list = create_test_sample_list()
-   expected = []
-   del_index = 0
-   for i in range(len(sample)):
-     if not del_index == i:
-       expected = [sample[i]] + expected
-   list.remove(sample[del_index])
-   ret = list.print(True) #print the list
-   if ret == expected:
-     print("Passed: Delete value that is at the end test passed deleted[{}] list left[{}]".format(sample[del_index],ret))
-   else:
-     print("Failed: Delete value that is at the end test failed delete [{}] failed list left[{}] expected list left[{}]".format(sample[del_index],ret,expected))
+  test = Test()
+  for test_case in test_cases:
+    res = test.run_testcase(test_case[0],test_case[1])
+    if res == test_case[2]:
+      print("test_case {} passed".format(test_case))
+    else:
+      print("test_case {} failed. res {}".format(test_case,res))
 
 if __name__ == "__main__":
-   execute_test()
+  run_test()
+
