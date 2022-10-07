@@ -63,12 +63,25 @@ class BTree(object):
       self.preorder(node.left,ret)
       self.preorder(node.right,ret)
   
+  '''
   def postorder(self,node,ret=None):
     if node:
       self.postorder(node.left,ret)
       self.postorder(node.right,ret)
       print(node.get(),end="")
       ret.append(node.v)
+  '''
+  
+  def postorder(self,node,ret=None,sum=0):
+    if node:
+      lval = self.postorder(node.left,ret)
+      rval = self.postorder(node.right,ret)
+      print("*{},{},{}".format(node.v,lval,rval),end="")
+      ret.append(node.v)
+      return lval+rval+node.v
+      #return node.v
+    else:
+      return 0
   
   def print(self,order='inorder'):
     ret = []
